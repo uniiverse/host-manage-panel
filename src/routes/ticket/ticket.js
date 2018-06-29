@@ -1,9 +1,10 @@
 import React from 'react';
+import _ from 'underscore';
 
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
-
+import Button from '@material-ui/core/Button';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
 import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
 import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
@@ -12,9 +13,8 @@ import FormLabel from '@material-ui/core/FormLabel';
 import RadioGroup from '@material-ui/core/RadioGroup';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Radio from '@material-ui/core/Radio';
-// import FormHelperText from '@material-ui/core/FormHelperText';
-// import InputAdornment from '@material-ui/core/InputAdornment';
 import Input from '@material-ui/core/Input';
+import Snackbar from '@material-ui/core/Snackbar';
 
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
@@ -28,6 +28,9 @@ import './ticket.css';
 const styles = theme => ({
   TicketTypeContainer: {
     display: 'block'
+  },
+  snackbar: {
+    margin: 10
   },
   formControl: {
     display: 'block'
@@ -49,15 +52,21 @@ const styles = theme => ({
   },
 });
 
-
-
 class Ticket extends React.Component {
   state = {
     ticketStatus: 'active',
     ticketAvailability: 'everywhere',
     eventTitle: '',
-    description: ''
+    description: '',
+    quantity: 10,
+    snackOpen: false
   };
+
+  componentWillMount() {
+    this.handleDebounce = _.debounce(() => {
+      this.setState({ snackOpen: true });
+    }, 1000);
+  }
 
   componentDidMount() {
     this.setState({
@@ -66,20 +75,28 @@ class Ticket extends React.Component {
     });
   }
 
-  handleSaveEvent = event => {
-    this.setState({ eventTitle: event.title, description: event.description });
+  handleQuantity = event => {
+    this.setState({ quantity: event.target.value });
+    this.handleDebounce();
   };
 
   handleTicketStatus = event => {
     this.setState({ ticketStatus: event.target.value });
+    this.handleDebounce();
   };
 
   handleTicketAvailability = event => {
     this.setState({ ticketAvailability: event.target.value });
+    this.handleDebounce();
   };
   
   handleEventNameChange = event => {
     this.setState({ eventTitle: event.target.value});
+    this.handleDebounce();
+  };
+
+  handleCloseSnack = event => {
+    this.setState({ snackOpen: false });
   };
 
   render() {
@@ -87,6 +104,15 @@ class Ticket extends React.Component {
 
     return (
       <div>
+        <Snackbar
+          open={this.state.snackOpen}
+          onClose={this.handleCloseSnack}
+          className={classes.snackbar}
+          autoHideDuration={5000}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          message="Saved"
+          action={<Button color="secondary" onClick={this.handleCloseSnack}>{'Close'}</Button>}
+        />
         <AppBar position="static" color="default">
           <Toolbar>
             <Typography variant="title" color="inherit">
@@ -104,9 +130,6 @@ class Ticket extends React.Component {
               label="Title"
               value={this.state.eventTitle}
               onChange={this.handleEventNameChange}
-              endAdornment={
-                <CircularProgress className={classes.progress} />
-              }
             />
           </ExpansionPanelDetails>
         </ExpansionPanel>
@@ -132,7 +155,8 @@ class Ticket extends React.Component {
                   <FormLabel component="legend">Max Quantity</FormLabel>
                     <TextField
                       id="maxQuantity"
-                      defaultValue="10"
+                      value={this.state.quantity}
+                      onChange={this.handleQuantity}
                       margin="normal"
                     />
                 Sold: 9
