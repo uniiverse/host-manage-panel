@@ -6,7 +6,7 @@ import ApolloClient from 'apollo-boost';
 
 import { getSessionCSRFToken } from '../selectors/raw-selectors';
 
-import Ticket from './ticket/ticket';
+import Ticket from './ticket/ticket-query';
 import NotFound from './not-found';
 
 class Router extends React.Component {
